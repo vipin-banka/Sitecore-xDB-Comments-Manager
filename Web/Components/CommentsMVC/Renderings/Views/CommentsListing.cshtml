@@ -1,0 +1,62 @@
+﻿@using System.Web.Mvc.Html
+@using Sitecore.Data
+@using xDBCommentsManager
+@inherits System.Web.Mvc.WebViewPage
+
+@{
+    IEnumerable<Comment> comments = null;
+    ICommentRepository objRepository = new CommentRepository();
+    GetCommonSettings objGetCommonSettings=new GetCommonSettings();
+    var commonSetting = objGetCommonSettings.GetCommonSetting();
+    ID currentItem = Sitecore.Context.Item.ID;
+
+    // Assign value of current item to hidden field.
+    @Html.Hidden("hfGUID", Sitecore.Context.Item.ID.ToString(), new { @id = "hfGUID" })
+    ;
+
+    // Assign value of result per click to hidden field.
+    @Html.Hidden("hfResultsPerClick", commonSetting.CommentOnLoadMore, new { @id = "hfResultsPerClick" })
+    
+     // Assign value of total comment to hidden field.
+    @Html.Hidden("hftotalRecords", objRepository.Retrieve(currentItem.ToString(), true, null, null, "Ascending").Count().ToString(), new { @id = "hftotalRecords" });
+
+    //Assign value of comment display on page load to hidden field.
+    var resultOnPageLoad = commonSetting.CommentOnPageLoad;
+    @Html.Hidden("hfresultOnPageLoad", resultOnPageLoad, new { @id = "hfresultOnPageLoad" });
+    
+    if (currentItem.ToString() != "")
+    {
+        // Retrieve comments.
+        comments = objRepository.Retrieve(currentItem.ToString(), true, null, null, "Ascending").Take(resultOnPageLoad);
+    }
+}
+
+
+<!--Display the comment with user name and date time of comment-->
+<div class="basic-grey">
+    <div class="blog-container">
+        <h3 class="comment-header">Comments</h3>
+        <ul class="comment-Container" style="list-style: none">
+            @if (comments != null)
+            {
+                foreach (Comment comment in comments)
+                {
+                    <li class="comment-content">
+                        <h5 class="comment-author-name">
+                            By
+                            @Html.Raw(comment.Author)
+                            on <span class="comment-time">
+                                @Html.Raw(comment.Date)
+                            </span>
+                        </h5>
+                        <span class="comment-body">
+                            @Html.Raw(comment.Body)
+                        </span>
+                        
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+    <a class="load_more-button" id="Btn-More"></a>
+</div>

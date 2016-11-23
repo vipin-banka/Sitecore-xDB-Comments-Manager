@@ -1,0 +1,63 @@
+﻿@using System.Web.Mvc
+@using System.Web.Mvc.Html
+@using Sitecore.Buckets.Extensions
+@using xDBCommentsManager
+@inherits System.Web.Mvc.WebViewPage
+
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<div class="blog-comment-container basic-grey">
+    <label>
+        @{
+            GetSettings getSettings = new GetSettings();
+            var settingsValue = getSettings.GetSetting(Sitecore.Context.Item.ID.ToString());
+            var siteKey = settingsValue.SiteKey;
+        }
+        <!--Setting the status message after insert comment call-->
+        @if (Request.QueryString["status"] != null && Request.QueryString["status"] == "success")
+        {
+            @Html.Raw("Thank you for submiting your valuable comment")
+
+
+        }
+        else if (Request.QueryString["status"] != null && Request.QueryString["status"] == "error")
+        {
+            @Html.Raw("Please try again later")
+        }
+        else if (Request.QueryString["status"] != null && Request.QueryString["status"] == "captchaerror")
+        {
+            @Html.Raw("Captcha not filled or not match")
+        }
+    </label>
+    <br />
+
+    <!--Insert new comment form-->
+    <h1>
+        <span> Write a Comment</span>
+    </h1>
+    @using (Html.BeginForm("NewComment", "Comment", FormMethod.Post))
+    {
+        @Html.Hidden("BlogPostId", Sitecore.Context.Item.ID.ToString())
+        <label><span>Your Name :</span></label>
+        @Html.TextBox("AuthorName", null, new { @class = "txt-author-name", placeholder = "Your Full Name", required = "true" })
+        <label>
+            <span>Your Email :</span>
+        </label>
+        @Html.TextBox("AuthorEmail", null, new { @class = "txt-email", type = "email", placeholder = "Valid Email Address", required = "true" })
+        <label>
+            <span>Comment :</span>
+        </label>
+        @Html.TextArea("AuthorComment", null, new { @class = "txt-comment-body", placeholder = "Your Comment", required = "true" })
+        if (!siteKey.IsNullOrEmpty())
+        {
+            <div class="g-recaptcha" data-sitekey=@siteKey data-error="Please validate captcha"></div>
+        }
+
+        <div class="clear"></div>
+        <div class="submit-container">
+            <input type="submit" value="Submit" class="button" />
+        </div>
+    }
+
+</div>
+
+
